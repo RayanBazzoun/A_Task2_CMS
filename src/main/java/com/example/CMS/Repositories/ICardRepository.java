@@ -1,0 +1,12 @@
+package com.example.CMS.Repositories;
+import com.example.CMS.Models.CardModel;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.UUID;
+@Repository
+public interface ICardRepository extends JpaRepository<CardModel, UUID> {
+
+    List<CardModel> findAllByAccount_Id(UUID accountId);
+}
