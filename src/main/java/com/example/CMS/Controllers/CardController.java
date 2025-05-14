@@ -23,7 +23,7 @@ public class CardController {
     private ModelMapper modelMapper;
 
     @PostMapping
-    public ResponseEntity<CardResponse> createCard(@RequestBody UUID accountId) {
+    public ResponseEntity<CardResponse> createCard(@RequestParam UUID accountId) {
         CardModel createdCard = cardService.createCard(accountId);
         CardResponse response = modelMapper.map(createdCard, CardResponse.class);
 

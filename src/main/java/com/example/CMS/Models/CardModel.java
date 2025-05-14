@@ -3,6 +3,7 @@ import com.example.CMS.Models.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -25,5 +26,5 @@ public class CardModel {
     private String cardNumber;
 
     @ManyToMany(mappedBy = "cards")
-    private Set<AccountModel> accounts;
+    private Set<AccountModel> accounts = new HashSet<>();
 }
