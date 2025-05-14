@@ -8,8 +8,6 @@ This document provides a detailed explanation of the database design, API endpoi
 
 ## Database Design
 
-The application uses a relational database managed via JPA entities. The core entities are:
-
 ### 1. **Account**
 - **Table**: `Account`
 - **Fields**:
