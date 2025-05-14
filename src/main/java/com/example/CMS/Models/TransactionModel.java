@@ -1,4 +1,5 @@
 package com.example.CMS.Models;
+import com.example.CMS.Models.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "transaction_amount")
+@Table(name = "transaction")
 public class TransactionModel {
     @Id
     @GeneratedValue
@@ -24,48 +25,10 @@ public class TransactionModel {
     @JoinColumn(name = "card_id")
     private CardModel card;
 
+    @Enumerated(EnumType.STRING)
+    private TransactionType transactionType;
 
-    public CardModel getCard() {
-        return card;
-    }
+    private LocalDateTime transactionDate;
 
-    public void setCard(CardModel card) {
-        this.card = card;
-    }
-
-    private String transaction_type;
-    private LocalDateTime transaction_date;
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public LocalDateTime getTransaction_date() {
-        return transaction_date;
-    }
-
-    public void setTransaction_date(LocalDateTime transaction_date) {
-        this.transaction_date = transaction_date;
-    }
-
-    public String getTransaction_type() {
-        return transaction_type;
-    }
-
-    public void setTransaction_type(String transaction_type) {
-        this.transaction_type = transaction_type;
-    }
-    private BigDecimal transaction_amount;
-
-    public BigDecimal getTransaction_amount() {
-        return transaction_amount;
-    }
-
-    public void setTransaction_amount(BigDecimal transaction_amount) {
-        this.transaction_amount = transaction_amount;
-    }
-
+    private BigDecimal transactionAmount;
 }

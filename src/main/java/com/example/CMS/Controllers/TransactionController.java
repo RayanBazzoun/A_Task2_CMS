@@ -1,13 +1,13 @@
 package com.example.CMS.Controllers;
 
-import com.example.CMS.DTOs.TransactionDTO;
+import com.example.CMS.DTOs.TransactionRequest;
+import com.example.CMS.DTOs.TransactionResponse;
 import com.example.CMS.Models.TransactionModel;
 import com.example.CMS.Services.TransactionService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/transactions")
@@ -15,21 +15,24 @@ public class TransactionController {
 
     @Autowired
     private TransactionService transactionService;
+    @Autowired
+    private ModelMapper modelMapper;
 
     @PostMapping
-    public ResponseEntity<?> createTransaction(@RequestBody TransactionDTO request) {
+    public ResponseEntity<TransactionResponse> createTransaction(@RequestBody TransactionRequest requestDTO) {
         try {
             TransactionModel newTransaction = transactionService.createTransaction(
-                    request.getCardId(),
-                    request.getTransactionAmount(),
-                    request.getTransactionType()
+                    requestDTO.getCardId(),
+                    requestDTO.getTransactionAmount(),
+                    requestDTO.getTransactionType()
             );
-            return ResponseEntity.ok(newTransaction);
+            TransactionResponse response = modelMapper.map(newTransaction, TransactionResponse.class);
+
+            return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Transaction failed: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(null);
         }
     }
-
 }
