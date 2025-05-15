@@ -1,16 +1,17 @@
-package com.example.CMS.Controllers;
+package com.example.CMS.controllers;
 
-import com.example.CMS.DTOs.AccountRequest;
-import com.example.CMS.DTOs.AccountResponse;
-import com.example.CMS.Models.AccountModel;
-import com.example.CMS.Services.AccountService;
-import com.example.CMS.Services.CardService;
+import com.example.CMS.dtos.CreateAccountRequest;
+import com.example.CMS.dtos.UpdateAccountRequest;
+import com.example.CMS.dtos.AccountResponse;
+import com.example.CMS.models.AccountModel;
+import com.example.CMS.services.AccountService;
+import com.example.CMS.services.CardService;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -27,16 +28,15 @@ public class AccountController {
     private CardService cardService;
 
     @PostMapping
-    public ResponseEntity<AccountResponse> createAccount(@RequestBody BigDecimal balance) {
-        AccountModel newAccount = accountService.createAccount(balance);
+    public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
+        AccountModel newAccount = accountService.createAccount(request);
         AccountResponse response = modelMapper.map(newAccount, AccountResponse.class);
-
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{accountId}/status")
-    public ResponseEntity<AccountResponse> updateAccountStatus(@RequestBody AccountRequest accountRequest) {
-        AccountModel updatedAccount = accountService.updateAccount(accountRequest);
+    public ResponseEntity<AccountResponse> updateAccountStatus(@Valid  @RequestBody UpdateAccountRequest updateAccountRequest) {
+        AccountModel updatedAccount = accountService.updateAccount(updateAccountRequest);
         if (updatedAccount == null) {
             return ResponseEntity.notFound().build();
         }

@@ -1,13 +1,14 @@
-package com.example.CMS.Services;
+package com.example.CMS.services;
 
-import com.example.CMS.DTOs.AccountRequest;
-import com.example.CMS.Models.AccountModel;
-import com.example.CMS.Models.enums.Status;
-import com.example.CMS.Repositories.IAccountRepository;
+import com.example.CMS.dtos.CreateAccountRequest;
+import com.example.CMS.dtos.UpdateAccountRequest;
+import com.example.CMS.models.AccountModel;
+import com.example.CMS.models.enums.Status;
+import com.example.CMS.repositories.IAccountRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,21 +16,23 @@ import java.util.UUID;
 public class AccountService {
     @Autowired
     private IAccountRepository accountRepository;
+    @Autowired
+    private ModelMapper modelMapper;
+    public AccountModel createAccount(CreateAccountRequest request) {
+        AccountModel account = modelMapper.map(request, AccountModel.class);
+        account.setStatus(Status.ACTIVE);
+        return accountRepository.save(account);
 
-    public AccountModel createAccount(BigDecimal balance) {
-        AccountModel accountModel = new AccountModel();
-        accountModel.setStatus(Status.ACTIVE); // Use enum
-        accountModel.setBalance(balance);
-        return accountRepository.save(accountModel);
     }
 
-    public AccountModel updateAccount(AccountRequest accountRequest) {
+
+    public AccountModel updateAccount(UpdateAccountRequest updateAccountRequest) {
         // Find account by ID
-        AccountModel account = accountRepository.findById(accountRequest.getAccountId())
+        AccountModel account = accountRepository.findById(updateAccountRequest.getAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
         // Update the account's status
-        account.setStatus(accountRequest.getStatus()); // Use enum directly
+        account.setStatus(updateAccountRequest.getStatus());
         return accountRepository.save(account);
     }
 

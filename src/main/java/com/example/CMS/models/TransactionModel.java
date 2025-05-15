@@ -1,5 +1,5 @@
-package com.example.CMS.Models;
-import com.example.CMS.Models.enums.TransactionType;
+package com.example.CMS.models;
+import com.example.CMS.models.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +18,7 @@ import java.util.UUID;
 @Table(name = "transaction")
 public class TransactionModel {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @ManyToOne

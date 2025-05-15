@@ -1,4 +1,4 @@
-package com.example.CMS.Models.enums;
+package com.example.CMS.models.enums;
 
 public enum Status {
     ACTIVE,

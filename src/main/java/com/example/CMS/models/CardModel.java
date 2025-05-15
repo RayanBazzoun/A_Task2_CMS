@@ -1,5 +1,5 @@
-package com.example.CMS.Models;
-import com.example.CMS.Models.enums.Status;
+package com.example.CMS.models;
+import com.example.CMS.models.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -13,9 +13,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Table(name = "card")
+@EqualsAndHashCode(exclude = "accounts")
 public class CardModel {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Enumerated(EnumType.STRING)
@@ -23,6 +24,7 @@ public class CardModel {
 
     private LocalDate expiry;
 
+    @Column(unique = true)
     private String cardNumber;
 
     @ManyToMany(mappedBy = "cards")

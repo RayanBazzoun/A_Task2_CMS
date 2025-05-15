@@ -1,13 +1,14 @@
-package com.example.CMS.Services;
+package com.example.CMS.services;
 
-import com.example.CMS.Models.AccountModel;
-import com.example.CMS.Models.CardModel;
-import com.example.CMS.Models.TransactionModel;
-import com.example.CMS.Models.enums.Status;
-import com.example.CMS.Models.enums.TransactionType;
-import com.example.CMS.Repositories.ITransactionRepository;
-import com.example.CMS.Repositories.IAccountRepository;
-import com.example.CMS.Repositories.ICardRepository;
+import com.example.CMS.models.AccountModel;
+import com.example.CMS.models.CardModel;
+import com.example.CMS.models.TransactionModel;
+import com.example.CMS.models.enums.CurrencyType;
+import com.example.CMS.models.enums.Status;
+import com.example.CMS.models.enums.TransactionType;
+import com.example.CMS.repositories.ITransactionRepository;
+import com.example.CMS.repositories.IAccountRepository;
+import com.example.CMS.repositories.ICardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,7 @@ public class TransactionService {
     @Autowired
     private ICardRepository cardRepository;
 
-    public TransactionModel createTransaction(UUID cardId, BigDecimal transactionAmount, TransactionType transactionType) {
+    public TransactionModel createTransaction(UUID cardId, BigDecimal transactionAmount, TransactionType transactionType, CurrencyType currency) {
         CardModel card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new IllegalArgumentException("Card not found"));
 
@@ -42,8 +43,9 @@ public class TransactionService {
 
         AccountModel account = card.getAccounts()
                 .stream()
-                .findFirst() // Assuming a card is linked to at least one account
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+                .filter(acc -> acc.getCurrency() == currency)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Account with currency " + currency + " not found for card"));
 
         if (account.getStatus() != Status.ACTIVE) {
             throw new IllegalArgumentException("Account is not active");
@@ -60,12 +62,14 @@ public class TransactionService {
 
         accountRepository.save(account);
 
-        TransactionModel transaction = new TransactionModel();
-        transaction.setCard(card);
-        transaction.setTransactionType(transactionType);
-        transaction.setTransactionAmount(transactionAmount);
-        transaction.setTransactionDate(LocalDateTime.now());
+        TransactionModel transaction = TransactionModel.builder()
+                .card(card)
+                .transactionType(transactionType)
+                .transactionAmount(transactionAmount)
+                .transactionDate(LocalDateTime.now())
+                .build();
 
         return transactionRepository.save(transaction);
+
     }
 }

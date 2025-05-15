@@ -1,11 +1,11 @@
-package com.example.CMS.Models;
+package com.example.CMS.models;
 
-import com.example.CMS.Models.enums.Status;
+import com.example.CMS.models.enums.CurrencyType;
+import com.example.CMS.models.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
@@ -15,13 +15,18 @@ import java.util.UUID;
 @Builder
 @Data
 @Table(name = "account")
+@EqualsAndHashCode(exclude = "cards")
 public class AccountModel {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(unique = false)
+    private CurrencyType currency;
 
     private BigDecimal balance;
     @ManyToMany

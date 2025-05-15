@@ -1,9 +1,10 @@
-package com.example.CMS.Controllers;
+package com.example.CMS.controllers;
 
-import com.example.CMS.DTOs.TransactionRequest;
-import com.example.CMS.DTOs.TransactionResponse;
-import com.example.CMS.Models.TransactionModel;
-import com.example.CMS.Services.TransactionService;
+import com.example.CMS.dtos.TransactionRequest;
+import com.example.CMS.dtos.TransactionResponse;
+import com.example.CMS.models.TransactionModel;
+import com.example.CMS.services.TransactionService;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,20 +20,26 @@ public class TransactionController {
     private ModelMapper modelMapper;
 
     @PostMapping
-    public ResponseEntity<TransactionResponse> createTransaction(@RequestBody TransactionRequest requestDTO) {
+    public ResponseEntity<?> createTransaction(@Valid @RequestBody TransactionRequest requestDTO) {
         try {
             TransactionModel newTransaction = transactionService.createTransaction(
                     requestDTO.getCardId(),
                     requestDTO.getTransactionAmount(),
-                    requestDTO.getTransactionType()
+                    requestDTO.getTransactionType(),
+                    requestDTO.getCurrency()
             );
+
+
             TransactionResponse response = modelMapper.map(newTransaction, TransactionResponse.class);
 
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
+            System.err.println("IllegalArgumentException: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(null);
+            System.err.println("Unhandled exception occurred:");
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Internal server error: " + e.getMessage());
         }
     }
 }

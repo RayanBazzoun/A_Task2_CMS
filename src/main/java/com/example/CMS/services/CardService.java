@@ -1,16 +1,17 @@
-package com.example.CMS.Services;
+package com.example.CMS.services;
 
-import com.example.CMS.DTOs.CardRequest;
-import com.example.CMS.Models.AccountModel;
-import com.example.CMS.Models.CardModel;
-import com.example.CMS.Models.enums.Status;
-import com.example.CMS.Repositories.IAccountRepository;
-import com.example.CMS.Repositories.ICardRepository;
+import com.example.CMS.dtos.CardRequest;
+import com.example.CMS.models.AccountModel;
+import com.example.CMS.models.CardModel;
+import com.example.CMS.models.enums.Status;
+import com.example.CMS.repositories.IAccountRepository;
+import com.example.CMS.repositories.ICardRepository;
 import org.jasypt.util.text.AES256TextEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -45,18 +46,31 @@ public class CardService {
 
         CardModel card = new CardModel();
         card.setCardNumber(encryptCardNumber(generateCardNumber()));
-        card.setStatus(Status.ACTIVE); // Use enum
+        card.setStatus(Status.ACTIVE);
         card.setExpiry(LocalDate.now().plusYears(5));
-        card.getAccounts().add(account);
 
-        return cardRepository.save(card);
+        if (card.getAccounts() == null) {
+            card.setAccounts(new HashSet<>());
+        }
+
+        card.getAccounts().add(account);
+        if (account.getCards() == null) {
+            account.setCards(new HashSet<>());
+        }
+        account.getCards().add(card);
+
+        cardRepository.save(card);
+        accountRepository.save(account);
+
+        return card;
     }
+
 
     public CardModel updateCardStatus(CardRequest cardRequest) {
         CardModel card = cardRepository.findById(cardRequest.getCardId())
                 .orElseThrow(() -> new IllegalArgumentException("Card not found"));
 
-        card.setStatus(cardRequest.getStatus()); // Use enum directly
+        card.setStatus(cardRequest.getStatus());
         return cardRepository.save(card);
     }
 
@@ -64,7 +78,7 @@ public class CardService {
         CardModel card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new IllegalArgumentException("Card not found"));
 
-        card.setCardNumber(decryptCardNumber(card.getCardNumber())); // Decrypt card number before returning
+        card.setCardNumber(decryptCardNumber(card.getCardNumber()));
         return card;
     }
 

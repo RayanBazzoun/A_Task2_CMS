@@ -1,6 +1,6 @@
-package com.example.CMS.Repositories;
+package com.example.CMS.repositories;
 
-import com.example.CMS.Models.AccountModel;
+import com.example.CMS.models.AccountModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

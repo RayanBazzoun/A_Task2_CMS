@@ -1,9 +1,10 @@
-package com.example.CMS.Controllers;
+package com.example.CMS.controllers;
 
-import com.example.CMS.DTOs.CardRequest;
-import com.example.CMS.DTOs.CardResponse;
-import com.example.CMS.Models.CardModel;
-import com.example.CMS.Services.CardService;
+import com.example.CMS.dtos.CardRequest;
+import com.example.CMS.dtos.CardResponse;
+import com.example.CMS.models.CardModel;
+import com.example.CMS.services.CardService;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class CardController {
     }
 
     @PutMapping("/{cardId}/status")
-    public ResponseEntity<CardResponse> updateCardStatus(@RequestBody CardRequest cardRequest) {
+    public ResponseEntity<CardResponse> updateCardStatus(@Valid @RequestBody CardRequest cardRequest) {
         CardModel updatedCard = cardService.updateCardStatus(cardRequest);
         if (updatedCard == null) {
             return ResponseEntity.notFound().build();
@@ -48,7 +49,6 @@ public class CardController {
             return ResponseEntity.notFound().build();
         }
 
-        // Map Model to ResponseDTO
         CardResponse response = modelMapper.map(card, CardResponse.class);
         return ResponseEntity.ok(response);
     }
