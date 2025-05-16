@@ -8,5 +8,4 @@ import java.util.UUID;
 @Repository
 public interface ICardRepository extends JpaRepository<CardModel, UUID> {
 
-    List<CardModel> findAllByAccounts_Id(UUID accountId);
 }
