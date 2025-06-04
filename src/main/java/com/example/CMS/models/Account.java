@@ -16,7 +16,7 @@ import java.util.UUID;
 @Data
 @Table(name = "account")
 @EqualsAndHashCode(exclude = "cards")
-public class AccountModel {
+public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
@@ -35,5 +35,5 @@ public class AccountModel {
             joinColumns = @JoinColumn(name = "account_id"),
             inverseJoinColumns = @JoinColumn(name = "card_id")
     )
-    private Set<CardModel> cards;
+    private Set<Card> cards;
 }

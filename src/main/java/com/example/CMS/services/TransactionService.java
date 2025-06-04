@@ -1,22 +1,23 @@
 package com.example.CMS.services;
 
 import com.example.CMS.dtos.TransactionResponse;
-import com.example.CMS.models.AccountModel;
-import com.example.CMS.models.CardModel;
-import com.example.CMS.models.TransactionModel;
+import com.example.CMS.models.Account;
+import com.example.CMS.models.Card;
+import com.example.CMS.models.Transaction;
 import com.example.CMS.models.enums.CurrencyType;
 import com.example.CMS.models.enums.Status;
 import com.example.CMS.models.enums.TransactionType;
 import com.example.CMS.repositories.ITransactionRepository;
 import com.example.CMS.repositories.IAccountRepository;
 import com.example.CMS.repositories.ICardRepository;
-import org.jasypt.util.text.AES256TextEncryptor;
+import com.example.CMS.utils.DeterministicAesUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class TransactionService {
@@ -30,33 +31,32 @@ public class TransactionService {
     @Autowired
     private ICardRepository cardRepository;
 
-    private final AES256TextEncryptor encryptor;
+    private final DeterministicAesUtil aesUtil;
 
     public TransactionService() {
-        this.encryptor = new AES256TextEncryptor();
-        this.encryptor.setPassword("RayanBazzoun");
-    }
-
-    private String decrypt(String encryptedCardNumber) {
-        try {
-            return encryptor.decrypt(encryptedCardNumber);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to decrypt card number", e);
+        String key = System.getenv("CARD_AES_KEY");
+        if (key == null || key.isBlank()) {
+            throw new IllegalStateException("CARD_AES_KEY environment variable not set.");
         }
+        this.aesUtil = new DeterministicAesUtil(key);
     }
 
     public TransactionResponse createTransaction(String cardNumber, BigDecimal transactionAmount, TransactionType transactionType, CurrencyType currency) {
         try {
-            CardModel card = cardRepository.findAll().stream()
-                    .filter(c -> {
-                        try {
-                            return decrypt(c.getCardNumber()).equals(cardNumber);
-                        } catch (Exception e) {
-                            return false;
-                        }
-                    })
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Card not found"));
+            String encryptedCardNumber = aesUtil.encrypt(cardNumber);
+
+            Optional<Card> optionalCard = cardRepository.findAll().stream()
+                    .filter(c -> c.getCardNumber().equals(encryptedCardNumber))
+                    .findFirst();
+
+            if (optionalCard.isEmpty()) {
+                return TransactionResponse.builder()
+                        .success(false)
+                        .message("Card not found")
+                        .build();
+            }
+
+            Card card = optionalCard.get();
 
             if (card.getStatus() != Status.ACTIVE) {
                 throw new IllegalArgumentException("Card is not active");
@@ -66,7 +66,7 @@ public class TransactionService {
                 throw new IllegalArgumentException("Card is expired");
             }
 
-            AccountModel account = card.getAccounts().stream()
+            Account account = card.getAccounts().stream()
                     .filter(acc -> acc.getCurrency() == currency)
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Account with currency " + currency + " not found for card"));
@@ -86,14 +86,14 @@ public class TransactionService {
 
             accountRepository.save(account);
 
-            TransactionModel transaction = TransactionModel.builder()
+            Transaction transaction = Transaction.builder()
                     .card(card)
                     .transactionType(transactionType)
                     .transactionAmount(transactionAmount)
                     .transactionDate(LocalDateTime.now())
                     .build();
 
-            TransactionModel savedTransaction = transactionRepository.save(transaction);
+            Transaction savedTransaction = transactionRepository.save(transaction);
 
             return TransactionResponse.builder()
                     .success(true)

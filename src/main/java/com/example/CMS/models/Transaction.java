@@ -16,14 +16,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Table(name = "transaction")
-public class TransactionModel {
+public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "card_id")
-    private CardModel card;
+    private Card card;
 
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;

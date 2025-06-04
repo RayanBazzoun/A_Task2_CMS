@@ -3,7 +3,7 @@ package com.example.CMS.controllers;
 import com.example.CMS.dtos.CreateAccountRequest;
 import com.example.CMS.dtos.UpdateAccountRequest;
 import com.example.CMS.dtos.AccountResponse;
-import com.example.CMS.models.AccountModel;
+import com.example.CMS.models.Account;
 import com.example.CMS.services.AccountService;
 import com.example.CMS.services.CardService;
 import jakarta.validation.Valid;
@@ -29,14 +29,14 @@ public class AccountController {
 
     @PostMapping
     public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
-        AccountModel newAccount = accountService.createAccount(request);
+        Account newAccount = accountService.createAccount(request);
         AccountResponse response = modelMapper.map(newAccount, AccountResponse.class);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{accountId}/status")
     public ResponseEntity<AccountResponse> updateAccountStatus(@Valid  @RequestBody UpdateAccountRequest updateAccountRequest) {
-        AccountModel updatedAccount = accountService.updateAccount(updateAccountRequest);
+        Account updatedAccount = accountService.updateAccount(updateAccountRequest);
         if (updatedAccount == null) {
             return ResponseEntity.notFound().build();
         }
@@ -53,7 +53,7 @@ public class AccountController {
 
     @GetMapping("/{accountId}")
     public ResponseEntity<AccountResponse> getAccount(@PathVariable UUID accountId) {
-        AccountModel account = accountService.getAccount(accountId);
+        Account account = accountService.getAccount(accountId);
         if (account == null) {
             return ResponseEntity.notFound().build();
         }
@@ -64,7 +64,7 @@ public class AccountController {
 
     @GetMapping
     public ResponseEntity<List<AccountResponse>> getAllAccounts() {
-        List<AccountModel> accounts = accountService.getAllAccounts();
+        List<Account> accounts = accountService.getAllAccounts();
         if (accounts == null || accounts.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

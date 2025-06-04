@@ -14,7 +14,7 @@ import java.util.UUID;
 @Builder
 @Table(name = "card")
 @EqualsAndHashCode(exclude = "accounts")
-public class CardModel {
+public class Card {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
@@ -28,5 +28,5 @@ public class CardModel {
     private String cardNumber;
 
     @ManyToMany(mappedBy = "cards")
-    private Set<AccountModel> accounts = new HashSet<>();
+    private Set<Account> accounts = new HashSet<>();
 }

@@ -2,7 +2,7 @@ package com.example.CMS.controllers;
 
 import com.example.CMS.dtos.CardRequest;
 import com.example.CMS.dtos.CardResponse;
-import com.example.CMS.models.CardModel;
+import com.example.CMS.models.Card;
 import com.example.CMS.services.CardService;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
@@ -25,7 +25,7 @@ public class CardController {
 
     @PostMapping
     public ResponseEntity<CardResponse> createCard(@RequestParam UUID accountId) {
-        CardModel createdCard = cardService.createCard(accountId);
+        Card createdCard = cardService.createCard(accountId);
         CardResponse response = modelMapper.map(createdCard, CardResponse.class);
 
         return ResponseEntity.ok(response);
@@ -33,7 +33,7 @@ public class CardController {
 
     @PutMapping("/{cardId}/status")
     public ResponseEntity<CardResponse> updateCardStatus(@Valid @RequestBody CardRequest cardRequest) {
-        CardModel updatedCard = cardService.updateCardStatus(cardRequest);
+        Card updatedCard = cardService.updateCardStatus(cardRequest);
         if (updatedCard == null) {
             return ResponseEntity.notFound().build();
         }
@@ -44,7 +44,7 @@ public class CardController {
 
     @GetMapping("/{cardId}")
     public ResponseEntity<CardResponse> getCardDetails(@PathVariable UUID cardId) {
-        CardModel card = cardService.getCardDetails(cardId);
+        Card card = cardService.getCardDetails(cardId);
         if (card == null) {
             return ResponseEntity.notFound().build();
         }

@@ -2,7 +2,7 @@ package com.example.CMS.services;
 
 import com.example.CMS.dtos.CreateAccountRequest;
 import com.example.CMS.dtos.UpdateAccountRequest;
-import com.example.CMS.models.AccountModel;
+import com.example.CMS.models.Account;
 import com.example.CMS.models.enums.Status;
 import com.example.CMS.repositories.IAccountRepository;
 import org.modelmapper.ModelMapper;
@@ -18,17 +18,17 @@ public class AccountService {
     private IAccountRepository accountRepository;
     @Autowired
     private ModelMapper modelMapper;
-    public AccountModel createAccount(CreateAccountRequest request) {
-        AccountModel account = modelMapper.map(request, AccountModel.class);
+    public Account createAccount(CreateAccountRequest request) {
+        Account account = modelMapper.map(request, Account.class);
         account.setStatus(Status.ACTIVE);
         return accountRepository.save(account);
 
     }
 
 
-    public AccountModel updateAccount(UpdateAccountRequest updateAccountRequest) {
+    public Account updateAccount(UpdateAccountRequest updateAccountRequest) {
         // Find account by ID
-        AccountModel account = accountRepository.findById(updateAccountRequest.getAccountId())
+        Account account = accountRepository.findById(updateAccountRequest.getAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
         // Update the account's status
@@ -44,16 +44,16 @@ public class AccountService {
         return false;
     }
 
-    public AccountModel getAccount(UUID id) {
+    public Account getAccount(UUID id) {
         return accountRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
     }
 
-    public List<AccountModel> getAllAccounts() {
+    public List<Account> getAllAccounts() {
         return accountRepository.findAll();
     }
 
-    public AccountModel saveAccount(AccountModel account) {
+    public Account saveAccount(Account account) {
         return accountRepository.save(account);
     }
 }

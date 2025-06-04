@@ -1,12 +1,12 @@
 package com.example.CMS.services;
 
 import com.example.CMS.dtos.CardRequest;
-import com.example.CMS.models.AccountModel;
-import com.example.CMS.models.CardModel;
+import com.example.CMS.models.Account;
+import com.example.CMS.models.Card;
 import com.example.CMS.models.enums.Status;
 import com.example.CMS.repositories.IAccountRepository;
 import com.example.CMS.repositories.ICardRepository;
-import org.jasypt.util.text.AES256TextEncryptor;
+import com.example.CMS.utils.DeterministicAesUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,14 +21,18 @@ public class CardService {
 
     @Autowired
     private ICardRepository cardRepository;
+
     @Autowired
     private IAccountRepository accountRepository;
 
-    private final AES256TextEncryptor encryptor;
+    private final DeterministicAesUtil aesUtil;
 
     public CardService() {
-        this.encryptor = new AES256TextEncryptor();
-        this.encryptor.setPassword("RayanBazzoun");
+        String key = System.getenv("CARD_AES_KEY");
+        if (key == null || key.isBlank()) {
+            throw new IllegalStateException("CARD_AES_KEY environment variable not set.");
+        }
+        this.aesUtil = new DeterministicAesUtil(key);
     }
 
     private String generateCardNumber() {
@@ -40,20 +44,28 @@ public class CardService {
         return cardNumber.toString();
     }
 
-    public CardModel createCard(UUID accountId) {
-        AccountModel account = accountRepository.findById(accountId)
+    public Card createCard(UUID accountId) {
+        Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
-        CardModel card = new CardModel();
-        card.setCardNumber(encryptCardNumber(generateCardNumber()));
+        String plainCardNumber = generateCardNumber();
+        String encryptedCardNumber;
+        try {
+            encryptedCardNumber = aesUtil.encrypt(plainCardNumber);
+        } catch (Exception e) {
+            throw new RuntimeException("Encryption failed", e);
+        }
+
+        Card card = new Card();
+        card.setCardNumber(encryptedCardNumber);
         card.setStatus(Status.ACTIVE);
         card.setExpiry(LocalDate.now().plusYears(5));
 
         if (card.getAccounts() == null) {
             card.setAccounts(new HashSet<>());
         }
-
         card.getAccounts().add(account);
+
         if (account.getCards() == null) {
             account.setCards(new HashSet<>());
         }
@@ -62,38 +74,35 @@ public class CardService {
         cardRepository.save(card);
         accountRepository.save(account);
 
+        // Optionally return card with plain number shown
+        card.setCardNumber(plainCardNumber);
         return card;
     }
 
-
-    public CardModel updateCardStatus(CardRequest cardRequest) {
-        CardModel card = cardRepository.findById(cardRequest.getCardId())
+    public Card updateCardStatus(CardRequest cardRequest) {
+        Card card = cardRepository.findById(cardRequest.getCardId())
                 .orElseThrow(() -> new IllegalArgumentException("Card not found"));
 
         card.setStatus(cardRequest.getStatus());
         return cardRepository.save(card);
     }
 
-    public CardModel getCardDetails(UUID cardId) {
-        CardModel card = cardRepository.findById(cardId)
+    public Card getCardDetails(UUID cardId) {
+        Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new IllegalArgumentException("Card not found"));
 
-        card.setCardNumber(decryptCardNumber(card.getCardNumber()));
+        try {
+            card.setCardNumber(aesUtil.decrypt(card.getCardNumber()));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to decrypt card number", e);
+        }
+
         return card;
     }
 
-    public List<CardModel> getCardsByAccId(UUID accountId) {
-        AccountModel account = accountRepository.findById(accountId)
+    public List<Card> getCardsByAccId(UUID accountId) {
+        Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-
         return account.getCards().stream().toList();
-    }
-
-    private String encryptCardNumber(String cardNumber) {
-        return encryptor.encrypt(cardNumber);
-    }
-
-    private String decryptCardNumber(String encryptedCardNumber) {
-        return encryptor.decrypt(encryptedCardNumber);
     }
 }
